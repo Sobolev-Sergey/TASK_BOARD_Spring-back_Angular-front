@@ -1,0 +1,28 @@
+
+
+
+
+Database
+Установка MySQL 8 на Windows 10
+https://info-comp.ru/install-mysql-on-windows-10 
+
+Download and install MySQL Server:
+https://dev.mysql.com/downloads/mysql/
+
+Download and install MySQL Workbench:
+https://dev.mysql.com/downloads/workbench/
+
+
+Or download and install MSI Installer
+https://dev.mysql.com/downloads/installer/
+
+
+Import data from dump.
+
+Set global time zone:
+set global time_zone = '+0:00';
+Check:
+select @@global.time_zone, @@session.time_zone;
+
+2
+Триггеры
