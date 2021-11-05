@@ -3,6 +3,7 @@ package com.example.taskboardbackend.controller;
 import com.example.taskboardbackend.entity.Category;
 import com.example.taskboardbackend.repositories.CategoryRepository;
 import com.example.taskboardbackend.search.CategorySearchValues;
+import com.example.taskboardbackend.util.MyLogger;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,7 +32,10 @@ public class CategoryController {
 
     @GetMapping("/all")
     public List<Category> findAll() {
+
+        MyLogger.showMethodName("CategoryController: findAll() ---------------------------------------------------------- ");
         return categoryRepository.findAllByOrderByTitleAsc();
+
     }
 
     /**
@@ -51,6 +55,8 @@ public class CategoryController {
     @PostMapping("/add")
     public ResponseEntity<Category> add(@RequestBody Category category) {
 
+        MyLogger.showMethodName("CategoryController: add() ---------------------------------------------------------- ");
+
         // проверка на обязательные параметры
         if (category.getId() != null && category.getId() != 0) {
             // id создается автоматически в БД (autoincrement), поэтому его передавать не нужно, иначе может быть конфликт уникальности значения
@@ -69,6 +75,8 @@ public class CategoryController {
     @PutMapping("/update")
     public ResponseEntity update(@RequestBody Category category) {
 
+        MyLogger.showMethodName("CategoryController: update() ---------------------------------------------------------- ");
+
         // проверка на обязательные параметры
         if (category.getId() == null || category.getId() == 0) {
             return new ResponseEntity("missed param: id", HttpStatus.NOT_ACCEPTABLE);
@@ -86,6 +94,8 @@ public class CategoryController {
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Category> findById(@PathVariable Long id) {
+
+        MyLogger.showMethodName("CategoryController: findById() ---------------------------------------------------------- ");
 
         Category category = null;
         try {
@@ -114,6 +124,8 @@ public class CategoryController {
     // поиск по любым параметрам CategorySearchValues
     @PostMapping("/search")
     public ResponseEntity<List<Category>> search(@RequestBody CategorySearchValues categorySearchValues) {
+
+        MyLogger.showMethodName("CategoryController: search() ---------------------------------------------------------- ");
 
         // если вместо текста будет пусто или null - вернуться все категории
         return ResponseEntity.ok(categoryRepository.findByTitle(categorySearchValues.getText()));
