@@ -111,6 +111,8 @@ public class CategoryController {
     @DeleteMapping("delete/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
 
+        MyLogger.showMethodName("CategoryController: delete() ---------------------------------------------------------- ");
+
         try {
             categoryRepository.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
