@@ -1,12 +1,14 @@
 package com.example.taskboardbackend.controller;
 
 import com.example.taskboardbackend.entity.Category;
+import com.example.taskboardbackend.entity.Priority;
 import com.example.taskboardbackend.repositories.CategoryRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/category")
@@ -75,4 +77,19 @@ public class CategoryController {
         return ResponseEntity.ok(categoryRepository.save(category));
 
     }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Category> findById(@PathVariable Long id) {
+
+        Category category = null;
+        try{
+            category = categoryRepository.findById(id).get();
+
+        } catch (NoSuchElementException e){
+            e.printStackTrace();
+            return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
+        }
+        return ResponseEntity.ok(category);
+    }
+
 }
