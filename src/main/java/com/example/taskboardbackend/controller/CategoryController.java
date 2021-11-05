@@ -1,8 +1,8 @@
 package com.example.taskboardbackend.controller;
 
 import com.example.taskboardbackend.entity.Category;
-import com.example.taskboardbackend.repositories.CategoryRepository;
 import com.example.taskboardbackend.search.CategorySearchValues;
+import com.example.taskboardbackend.service.CategoryService;
 import com.example.taskboardbackend.util.MyLogger;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -16,15 +16,17 @@ import java.util.NoSuchElementException;
 @RequestMapping("/category")
 public class CategoryController {
 
-    private CategoryRepository categoryRepository;
+    // доступ к БД
+    //private CategoryRepository categoryRepository;
+    private CategoryService categoryService;
 
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+    public CategoryController(CategoryService categoryService) {
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/test")
     public List<Category> test() {
-        List<Category> list = categoryRepository.findAll();
+        List<Category> list = categoryService.findAll();
         System.out.println("list= " + list);
 
         return list;
@@ -34,7 +36,7 @@ public class CategoryController {
     public List<Category> findAll() {
 
         MyLogger.showMethodName("CategoryController: findAll() ---------------------------------------------------------- ");
-        return categoryRepository.findAllByOrderByTitleAsc();
+        return categoryService.findAllByOrderByTitleAsc();
 
     }
 
@@ -42,20 +44,22 @@ public class CategoryController {
      * // сохранить в БД новый объект
      *
      * @PostMapping("/add") public void add(@RequestBody Category category) {
-     * categoryRepository.save(category);
+     * categoryService.save(category);
      * }
      * <p>
      * <p>
      * // вернуть созданный/добавленный объект
      * @PostMapping("/add") public Category add(@RequestBody Category category) {
-     * return categoryRepository.save(category);
+     * return categoryService.save(category);
      * }
      */
 
     @PostMapping("/add")
     public ResponseEntity<Category> add(@RequestBody Category category) {
 
+
         MyLogger.showMethodName("CategoryController: add() ---------------------------------------------------------- ");
+
 
         // проверка на обязательные параметры
         if (category.getId() != null && category.getId() != 0) {
@@ -69,13 +73,14 @@ public class CategoryController {
         }
 
 
-        return ResponseEntity.ok(categoryRepository.save(category));
+        return ResponseEntity.ok(categoryService.add(category));
     }
 
     @PutMapping("/update")
     public ResponseEntity update(@RequestBody Category category) {
 
         MyLogger.showMethodName("CategoryController: update() ---------------------------------------------------------- ");
+
 
         // проверка на обязательные параметры
         if (category.getId() == null || category.getId() == 0) {
@@ -88,39 +93,50 @@ public class CategoryController {
         }
 
         // save работает как на добавление, так и на обновление
-        return ResponseEntity.ok(categoryRepository.save(category));
+        categoryService.update(category);
 
+        return new ResponseEntity(HttpStatus.OK); // просто отправляем статус 200 (операция прошла успешно)
     }
 
+    // параметр id передаются не в BODY запроса, а в самом URL
     @GetMapping("/id/{id}")
     public ResponseEntity<Category> findById(@PathVariable Long id) {
 
         MyLogger.showMethodName("CategoryController: findById() ---------------------------------------------------------- ");
 
-        Category category = null;
-        try {
-            category = categoryRepository.findById(id).get();
 
-        } catch (NoSuchElementException e) {
+        Category category = null;
+
+        // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
+        // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
+        try {
+            category = categoryService.findById(id);
+        } catch (NoSuchElementException e) { // если объект не будет найден
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
+
         return ResponseEntity.ok(category);
     }
 
-    @DeleteMapping("delete/{id}")
+
+    // параметр id передаются не в BODY запроса, а в самом URL
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
 
         MyLogger.showMethodName("CategoryController: delete() ---------------------------------------------------------- ");
 
+
+        // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
+        // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
         try {
-            categoryRepository.deleteById(id);
+            categoryService.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.OK); // просто отправляем статус 200 (операция прошла успешно)
     }
 
     // поиск по любым параметрам CategorySearchValues
@@ -129,9 +145,8 @@ public class CategoryController {
 
         MyLogger.showMethodName("CategoryController: search() ---------------------------------------------------------- ");
 
-        // если вместо текста будет пусто или null - вернуться все категории
-        return ResponseEntity.ok(categoryRepository.findByTitle(categorySearchValues.getText()));
+
+        // если вместо текста будет пусто или null - вернутся все категории
+        return ResponseEntity.ok(categoryService.findByTitle(categorySearchValues.getText()));
     }
-
-
 }

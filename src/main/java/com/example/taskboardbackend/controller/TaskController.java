@@ -2,10 +2,9 @@ package com.example.taskboardbackend.controller;
 
 
 import com.example.taskboardbackend.entity.Task;
-import com.example.taskboardbackend.repositories.TaskRepository;
 import com.example.taskboardbackend.search.TaskSearchValues;
+import com.example.taskboardbackend.service.TaskService;
 import com.example.taskboardbackend.util.MyLogger;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,13 +27,14 @@ import java.util.NoSuchElementException;
 @RequestMapping("/task") // базовый адрес
 public class TaskController {
 
-    private final TaskRepository taskRepository; // сервис для доступа к данным (напрямую к репозиториям не обращаемся)
+    //private final TaskRepository taskRepository; // сервис для доступа к данным (напрямую к репозиториям не обращаемся)
+    private final TaskService taskService; // сервис для доступа к данным (напрямую к репозиториям не обращаемся)
 
 
     // автоматическое внедрение экземпляра класса через конструктор
     // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
-    public TaskController(TaskRepository taskRepository, ConfigurableEnvironment environment) {
-        this.taskRepository = taskRepository;
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
     }
 
 
@@ -44,7 +44,7 @@ public class TaskController {
 
         MyLogger.showMethodName("task: findAll() ---------------------------------------------------------------- ");
 
-        return ResponseEntity.ok(taskRepository.findAll());
+        return ResponseEntity.ok(taskService.findAll());
     }
 
     // добавление
@@ -64,7 +64,7 @@ public class TaskController {
             return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(taskRepository.save(task)); // возвращаем созданный объект со сгенерированным id
+        return ResponseEntity.ok(taskService.add(task)); // возвращаем созданный объект со сгенерированным id
 
     }
 
@@ -87,7 +87,7 @@ public class TaskController {
 
 
         // save работает как на добавление, так и на обновление
-        taskRepository.save(task);
+        taskService.update(task);
 
         return new ResponseEntity(HttpStatus.OK); // просто отправляем статус 200 (операция прошла успешно)
 
@@ -105,7 +105,7 @@ public class TaskController {
         // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
         // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
         try {
-            taskRepository.deleteById(id);
+            taskService.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
@@ -125,7 +125,7 @@ public class TaskController {
         // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
         // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
         try {
-            task = taskRepository.findById(id).get();
+            task = taskService.findById(id);
         } catch (NoSuchElementException e) { // если объект не будет найден
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
@@ -143,9 +143,6 @@ public class TaskController {
         MyLogger.showMethodName("task: search() ---------------------------------------------------------------- ");
 
 
-        // имитация загрузки (для тестирования индикаторов загрузки)
-//        imitateLoading();
-
         // исключить NullPointerException
         String text = taskSearchValues.getTitle() != null ? taskSearchValues.getTitle() : null;
 
@@ -161,25 +158,26 @@ public class TaskController {
         Integer pageNumber = taskSearchValues.getPageNumber() != null ? taskSearchValues.getPageNumber() : null;
         Integer pageSize = taskSearchValues.getPageSize() != null ? taskSearchValues.getPageSize() : null;
 
+
         Sort.Direction direction = sortDirection == null || sortDirection.trim().length() == 0 ||
                 sortDirection.trim().equals("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
 
 
+        // подставляем все значения
+
         // объект сортировки
         Sort sort = Sort.by(direction, sortColumn);
 
-        //объект постраничности
-        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
-
+        // объект постраничности
+        PageRequest pageRequest = PageRequest.of(pageNumber, pageSize, sort);
 
         // результат запроса с постраничным выводом
-        Page result = taskRepository.findByParams(text, completed, priorityId, categoryId, pageRequest);
+        Page result = taskService.findByParams(text, completed, priorityId, categoryId, pageRequest);
 
         // результат запроса
         return ResponseEntity.ok(result);
 
+
     }
-
-
 }
 
