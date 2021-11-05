@@ -1,8 +1,8 @@
 package com.example.taskboardbackend.controller;
 
-import com.example.taskboardbackend.entity.Category;
 import com.example.taskboardbackend.entity.Priority;
 import com.example.taskboardbackend.repositories.PriorityRepository;
+import com.example.taskboardbackend.search.PrioritySearchValues;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -97,10 +97,10 @@ public class PriorityController {
     public ResponseEntity<Priority> findById(@PathVariable Long id) {
 
         Priority priority = null;
-        try{
+        try {
             priority = priorityRepository.findById(id).get();
 
-        } catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -120,4 +120,11 @@ public class PriorityController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    // поиск по любым параметрам CategorySearchValues
+    @PostMapping("/search")
+    public ResponseEntity<List<Priority>> search(@RequestBody PrioritySearchValues prioritySearchValues) {
+
+        // если вместо текста будет пусто или null - вернуться все категории
+        return ResponseEntity.ok(priorityRepository.findByTitle(prioritySearchValues.getText()));
+    }
 }

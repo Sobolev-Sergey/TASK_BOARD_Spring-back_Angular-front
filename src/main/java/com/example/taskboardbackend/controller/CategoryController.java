@@ -2,6 +2,7 @@ package com.example.taskboardbackend.controller;
 
 import com.example.taskboardbackend.entity.Category;
 import com.example.taskboardbackend.repositories.CategoryRepository;
+import com.example.taskboardbackend.search.CategorySearchValues;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -109,5 +110,14 @@ public class CategoryController {
 
         return new ResponseEntity(HttpStatus.OK);
     }
+
+    // поиск по любым параметрам CategorySearchValues
+    @PostMapping("/search")
+    public ResponseEntity<List<Category>> search(@RequestBody CategorySearchValues categorySearchValues) {
+
+        // если вместо текста будет пусто или null - вернуться все категории
+        return ResponseEntity.ok(categoryRepository.findByTitle(categorySearchValues.getText()));
+    }
+
 
 }
