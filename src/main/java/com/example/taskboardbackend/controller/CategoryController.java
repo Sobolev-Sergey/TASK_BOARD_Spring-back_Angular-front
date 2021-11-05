@@ -2,9 +2,7 @@ package com.example.taskboardbackend.controller;
 
 import com.example.taskboardbackend.entity.Category;
 import com.example.taskboardbackend.repositories.CategoryRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,4 +23,20 @@ public class CategoryController {
 
         return list;
     }
+
+    /**
+     *
+     // сохранить в БД новый объект
+    @PostMapping("/add")
+    public void add(@RequestBody Category category) {
+        categoryRepository.save(category);
+    }
+    */
+
+    // вернуть созданный/добавленный объект
+    @PostMapping("/add")
+    public Category add(@RequestBody Category category) {
+        return categoryRepository.save(category);
+    }
+
 }
