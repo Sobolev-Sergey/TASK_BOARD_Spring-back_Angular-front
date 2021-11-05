@@ -1,5 +1,6 @@
 package com.example.taskboardbackend.controller;
 
+import com.example.taskboardbackend.entity.Category;
 import com.example.taskboardbackend.entity.Priority;
 import com.example.taskboardbackend.repositories.PriorityRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -32,6 +33,11 @@ public class PriorityController {
         System.out.println("list= " + list);
 
         return list; // JSON формат будет использоваться автоматически
+    }
+
+    @GetMapping("/all")
+    public List<Priority> findAll() {
+        return priorityRepository.findAllByOrderByIdAsc();
     }
 
     /**

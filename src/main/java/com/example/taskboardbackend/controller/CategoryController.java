@@ -28,6 +28,11 @@ public class CategoryController {
         return list;
     }
 
+    @GetMapping("/all")
+    public List<Category> findAll() {
+        return categoryRepository.findAllByOrderByTitleAsc();
+    }
+
     /**
      * // сохранить в БД новый объект
      *
