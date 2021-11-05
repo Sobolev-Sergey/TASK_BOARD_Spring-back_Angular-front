@@ -1,8 +1,8 @@
 package com.example.taskboardbackend.controller;
 
 import com.example.taskboardbackend.entity.Category;
-import com.example.taskboardbackend.entity.Priority;
 import com.example.taskboardbackend.repositories.CategoryRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -82,14 +82,27 @@ public class CategoryController {
     public ResponseEntity<Category> findById(@PathVariable Long id) {
 
         Category category = null;
-        try{
+        try {
             category = categoryRepository.findById(id).get();
 
-        } catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             e.printStackTrace();
             return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
         }
         return ResponseEntity.ok(category);
+    }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity delete(@PathVariable Long id) {
+
+        try {
+            categoryRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            e.printStackTrace();
+            return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
 }
